@@ -1,0 +1,3 @@
+2023-07-08 01:18:48 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "VOTING_USERS" not found (this database is empty); SQL statement:
+select m1_0.id,m1_0.password,m1_0.user_name from voting_users m1_0 where m1_0.user_name=? [42104-214]

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Application</title>
+  <style>
+	.question-item {
+	  margin-bottom: 20px;
+	  padding: 10px;
+	  background-color: #f2f2f2;
+	  border-radius: 5px;
+	}
+		
+	.question-text {
+	  font-weight: bold;
+	  margin-bottom: 10px;
+	}
+		
+	.vote-buttons {
+	  display: flex;
+	  justify-content: flex-start;
+	}
+		
+	.vote-button {
+	  margin-right: 10px;
+	  padding: 8px 12px;
+	  background-color: #eaeaea;
+	  border: none;
+	  border-radius: 3px;
+	  cursor: pointer;
+	  transition: background-color 0.3s ease;
+	}
+		
+	.vote-button:hover {
+	  background-color: #d5d5d5;
+	 }
+		
+    .vote-button:disabled {
+	  opacity: 0.5;
+	  cursor: not-allowed;
+	}
+	
+	.question-item {
+      margin-bottom: 20px;
+    }
+
+    .vote-bar {
+      height: 20px;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      margin-bottom: 5px;
+    }
+
+    .vote-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+    }
+
+    .yes-votes {
+      background-color: #4caf50;
+    }
+
+    .no-votes {
+      background-color: #f44336;
+    }
+
+    .vote-count {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Welcome to My Application</h1>
+  
+  <form id="username-form">
+    <label for="username">Username:</label>
+    <input type="text" id="username" required minlength="5" maxlength="20" pattern="[A-Za-z0-9]+" title="Alphanumeric characters only">
+    <label for="password">Password:</label>
+    <input type="text" id="password" required>
+    <button type="submit">Login</button>
+    <p id="username-error"></p>
+  </form>
+  
+  <div id ="home-page" style="display: none;">
+    <h2>Home Page</h2>
+    <input type="button" value="Create new question" id="create-question"/>
+    <input type="button" value="View  questions and vote" id="view-question-vote"/>
+    <input type="button" value="View Results" id="view-results"/>
+  </div>
+  
+  <div id="create-question-page" style="display: none;">
+    <h2>Create New Question</h2>
+    <input type="button" value="Back to Home Page" id="homeBtn1" class="back-to-home"/>
+    <div id="question-form">
+      <label for="question">Question:</label>
+      <input type="text" id="question" required maxlength="200">
+      <input type="button" value="Save Question" id ="save-question"/>
+      <p id="question-error"></p>
+    </div>
+  </div>
+  
+  <div id="view-question-page" style="display:none;">
+    <h2>View Questions and Vote</h2>
+    <input type="button" value="Back to Home Page" id="homeBtn2" class="back-to-home"/>
+    <div id="questions-list"></div>
+  </div>
+  
+  <div id="view-result-page" style="display:none;">
+    <h2>View Results</h2>
+    <input type="button" value="Back to Home Page" id="homeBtn3" class="back-to-home"/>
+    <div id="result-list"></div>
+  </div>
+  
+  <script>
+  let loggedInUser = null; //Global variable to store logged-in user
+  let userForm = document.getElementById('username-form');
+  userForm.addEventListener("submit", (e) =>
+  {
+	  e.preventDefault();
+	  const username = document.getElementById('username').value;
+	  const password = document.getElementById('password').value;
+	  const isValid = validateUsername(username);
+
+	  if (isValid) {
+		loggedInUser = username;
+	    // Send a POST request to the backend to save the username and password
+	    fetch('/api/username', {
+	      method: 'POST',
+	      headers: {
+	        'Content-Type': 'application/json'
+	      },
+	      body: JSON.stringify({ userName: username, password: password })
+	    })
+	    .then(response => {
+	      if (response.ok) {
+	        document.getElementById('username-form').style.display='none';
+	        document.getElementById('home-page').style.display='block';
+	      } else {
+	        throw new Error('Invalid username. Username must be alphanumeric and between 5 to 20 characters. Please try again.');
+	      }
+	    })
+	    .catch(error => {
+	      document.getElementById('username-error').textContent = error.message;
+	    });
+	  } else {
+	    document.getElementById('username-error').textContent = 'Invalid username. Username must be alphanumeric and between 5 to 20 characters. Please try again.';
+	  }
+  });
+  
+  function validateUsername(username) {
+	  const regex = /^[a-zA-Z0-9]{5,20}$/;
+	  return regex.test(username);
+  }
+  
+  document.getElementById('create-question').addEventListener('click', (e) => {
+	 document.getElementById('home-page').style.display = 'none';
+	 document.getElementById('create-question-page').style.display = 'block';
+  });
+  
+  document.getElementById('save-question').addEventListener('click', (e) => {
+	  const question = document.getElementById('question').value;
+	  if(!(question.trim()=== '')) {
+		  // Send a POST request to the backend to save the question
+		    fetch('/api/question', {
+		      method: 'POST',
+		      headers: {
+		        'Content-Type': 'application/json',
+		        'username': loggedInUser
+		      },
+		      body: JSON.stringify({ question: question})
+		    })
+		  .then(response => {
+			  if(response.ok) {
+				  document.getElementById('create-question-page').style.display = 'none';
+				  document.getElementById('home-page').style.display = 'block';
+			  }
+			  else if (response.status == 422) {
+				  response.text().then(errorMessage => {
+					  document.getElementById('question-error').textContent = errorMessage + '.Failed to save.';
+				  })
+			  }
+			  else {
+				  throw new Error('Failed to save question');
+			  }
+		  })
+		  .catch(error => {
+			  document.getElementById('question-error').textContent = error.message;
+		  });
+	  }
+	  else {
+		  document.getElementById('question-error').textContent = 'Invalid question. Please try again.';
+	  }
+  });
+
+  document.getElementById('view-question-vote').addEventListener('click', (e) => {
+	  document.getElementById('home-page').style.display = 'none';
+	  document.getElementById('view-question-page').style.display = 'block';
+	  const votedByUser = encodeURIComponent(loggedInUser);
+
+	  //send a GET request to the backend to fetch the list of questions
+	  fetch('api/questions?votedByUser=' + votedByUser)
+	    .then(response => response.json())
+	    .then(questions => {
+	    	const questionsList = document.getElementById('questions-list');
+	    	questionsList.innerHTML = '';
+	    	questions.forEach(question => {
+	    		console.log(question);
+	    		const questionItem = document.createElement('div');
+	            questionItem.classList.add('question-item');
+
+	            const questionData = JSON.parse(question.questionText);
+	            const questionText = document.createElement('p');
+	            questionText.textContent = questionData.question;
+	            questionText.classList.add('question-text');
+	            questionItem.appendChild(questionText);
+	            
+	            const voteOptions = document.createElement('div');
+	            voteOptions.classList.add('vote-options');
+
+	            const yesLabel = document.createElement('label');
+	            yesLabel.textContent = 'Yes';
+
+	            const yesRadioButton = document.createElement('input');
+	            yesRadioButton.type = 'radio';
+	            yesRadioButton.name = `vote-${question.id}`;
+	            yesRadioButton.value = 'yes';
+	            yesRadioButton.addEventListener('click', () => vote(question.id, true));
+
+	            yesLabel.appendChild(yesRadioButton);
+	            voteOptions.appendChild(yesLabel);
+
+	            const noLabel = document.createElement('label');
+	            noLabel.textContent = 'No';
+
+	            const noRadioButton = document.createElement('input');
+	            noRadioButton.type = 'radio';
+	            noRadioButton.name = `vote-${question.id}`;
+	            noRadioButton.value = 'no';
+	            noRadioButton.addEventListener('click', () => vote(question.id, false));
+
+	            noLabel.appendChild(noRadioButton);
+	            voteOptions.appendChild(noLabel);
+	            questionItem.appendChild(voteOptions);           
+	            questionsList.appendChild(questionItem);
+	    	});
+	    })
+	    .catch(error => {
+	        console.error('Failed to fetch questions:', error);
+	    })
+  });
+  
+  function vote(questionId, voteValue) {
+	  //send a POST request to the backend to record the vote
+	  fetch('/api/vote', {
+		  method:'POST',
+		  headers: {
+		      'Content-Type': 'application/json',
+		      'username': loggedInUser, // Pass the logged-in user in the request header
+		      'questionId': questionId //pass the question Id in the request header
+		    },
+		    body: JSON.stringify({voteValue: voteValue })
+	  })
+	  .then(response => {
+		  if(response.ok) {
+			  document.getElementById('view-question-page').style.display = 'none';
+			  document.getElementById('home-page').style.display = 'block';
+		  }
+		  else {
+			  throw new Error('Failed to record vote');
+		  }
+	  })
+	  .catch(error => {
+		    console.error('Failed to record vote:', error);
+	  });
+  }
+  
+  document.getElementById('view-results').addEventListener('click', e=> {
+	 document.getElementById('home-page').style.display = 'none';
+	 document.getElementById('view-result-page').style.display = 'block';
+	 fetch('api/results')
+	   .then(response => response.json())
+	   .then(results => {
+		   const resultsList = document.getElementById('result-list');
+	       resultsList.innerHTML = '';
+	       
+	       results.forEach(result => {
+               const resultItem = document.createElement("div");
+               resultItem.classList.add("result-item");
+
+               const questionData = JSON.parse(result.questionText);
+	           const questionText = document.createElement('p');
+	           questionText.textContent = questionData.question;
+               resultItem.appendChild(questionText);
+               
+               const voteBar = document.createElement("div");
+               voteBar.classList.add("vote-bar");
+
+               const voteBarFillYes = document.createElement("div");
+               voteBarFillYes.classList.add("vote-bar-fill", "yes-votes");
+               voteBarFillYes.style.width = result.yesPercentage + "%";
+               voteBar.appendChild(voteBarFillYes);
+
+               const voteBarFillNo = document.createElement("div");
+               voteBarFillNo.classList.add("vote-bar-fill", "no-votes");
+               voteBarFillNo.style.width = result.noPercentage + "%";
+               voteBar.appendChild(voteBarFillNo);
+
+               resultItem.appendChild(voteBar);
+
+               const voteCount = document.createElement("p");
+               voteCount.classList.add("vote-count");
+               voteCount.textContent = `Total Votes: ${result.totalVotes} | Yes: ${result.yesPercentage.toFixed(2)}% | No: ${result.noPercentage.toFixed(2)}%`;
+               resultItem.appendChild(voteCount);
+               
+               resultsList.appendChild(resultItem);
+           });
+	   })
+	   .catch(error => {
+           console.error("Failed to fetch results:", error);
+       });
+  });
+  
+  var elements = document.getElementsByClassName('back-to-home');
+  for(var i=0; i<elements.length; i++) {
+	  elements[i].addEventListener('click', (e) => {
+	  document.getElementById('create-question-page').style.display = 'none';
+	  document.getElementById('view-question-page').style.display = 'none';
+	  document.getElementById('view-result-page').style.display='none';
+	  document.getElementById('home-page').style.display = 'block';
+      });
+  }
+  </script>
+</body>
+</html>
