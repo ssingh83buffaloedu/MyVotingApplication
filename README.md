@@ -21,5 +21,4 @@ Single-Page Application Code:
 Back-End Code:
     https://github.com/ssingh83buffaloedu/MyVotingApplication/tree/main/src/main/java/com/my/voting/application/MyVotingApplication
 
-Database File:
-  https://github.com/ssingh83buffaloedu/MyVotingApplication/blob/main/my-database.mv.db
+The application stores values in spring H2 in-memory database and will create a temporary data file in users folder. The properties are set in application.properties
