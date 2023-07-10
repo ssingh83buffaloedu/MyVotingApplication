@@ -17,6 +17,7 @@ Steps to run:
 
 Single-Page Application Code:
     https://github.com/ssingh83buffaloedu/MyVotingApplication/blob/main/src/main/resources/templates/login.html
+    
 Back-End Code:
     https://github.com/ssingh83buffaloedu/MyVotingApplication/tree/main/src/main/java/com/my/voting/application/MyVotingApplication
 
