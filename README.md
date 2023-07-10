@@ -21,4 +21,6 @@ Single-Page Application Code:
 Back-End Code:
     https://github.com/ssingh83buffaloedu/MyVotingApplication/tree/main/src/main/java/com/my/voting/application/MyVotingApplication
 
-The application stores values in spring H2 in-memory database and will create a temporary data file in users folder. The properties are set in application.properties
+The application stores values in spring H2 in-memory database and will create a temporary data file in users folder. The properties are set in application.properties.
+
+Note: login.html is a static html page and need to be refreshed after calling an API to reflect the changes.
