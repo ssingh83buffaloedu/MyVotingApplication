@@ -83,6 +83,8 @@ public class VotingQuestionsService {
 		double noPercentage = 0.0;
 		for(VotingQuestions question : questionsList)
 		{
+			yesPercentage =0.0;
+			noPercentage =0.0;
 			totalVotes = voteRepository.countByVotingQuestions_Id(question.getId());
 			yesVoteCount = voteRepository.countByVotingQuestions_IdAndVoteValue(question.getId(), true);
 			noVoteCount = voteRepository.countByVotingQuestions_IdAndVoteValue(question.getId(), false);
